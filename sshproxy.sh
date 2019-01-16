@@ -201,7 +201,7 @@ pubfile="$idfile.pub"
 # prompt is interrupted by ctrl-c.  Otherwise terminal gets left in
 # a weird state.
 
-read -p "Enter your password+OTP: " -s pw
+read -p "Enter the password+OTP for ${user}: " -s pw
 
 # read -p doesn't output a newline after entry
 printf "\n"
