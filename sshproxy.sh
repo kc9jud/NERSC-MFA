@@ -39,7 +39,7 @@ id=nersc			# Name of key file
 user=$USER			# Username
 sshdir=~/.ssh			# SSH directory
 scope="default"			# Default scope
-url="sshproxy.nersc.gov"	# hostname for reaching proxy
+url="https://sshproxy.nersc.gov"	# hostname for reaching proxy
 
 #############
 # Functions
@@ -138,10 +138,11 @@ opt_url=''	# -U
 opt_user=''	# -u
 opt_out=''	# -o
 opt_agent=0	# -a
+opt_putty=''     # -p
 
 # Process getopts.  See Usage() above for description of arguments
 
-while getopts "ahs:k:U:u:o:" opt; do
+while getopts "aphs:k:U:u:o:" opt; do
 	case ${opt} in
 
 		h )
@@ -166,6 +167,9 @@ while getopts "ahs:k:U:u:o:" opt; do
 		;;
 		a )
 			opt_agent=1
+		;;
+		p )
+			opt_putty="?putty"
 		;;
 
 		\? )
@@ -216,7 +220,7 @@ tmpcert="$(mktemp $tmpdir/cert.XXXXXX)"
 tmppub="$(mktemp $tmpdir/pub.XXXXXX)"
 
 # And get the key/cert
-curl -s -S -X POST https://$url/create_pair/$scope/ \
+curl -s -S -X POST $url/create_pair/$scope/$opt_putty \
 	-o $tmpkey -K - <<< "-u $user:$pw"
 
 # Check for error
@@ -237,6 +241,11 @@ if [[ "$x" =~ "Authentication failed. Failed login" ]]; then
 fi
 
 # Check whether the file appears to contain a valid key
+
+if [[ "$x" == "PuTTY-User-Key-File-2: ssh-rsa" ]]; then
+   mv $tmpkey $idfile.ppk
+   exit
+fi
 
 if [[ "$x" != "-----BEGIN RSA PRIVATE KEY-----" ]]; then
 	Error "Did not get in a proper ssh private key. Output was:"
