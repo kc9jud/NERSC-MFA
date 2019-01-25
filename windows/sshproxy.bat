@@ -6,11 +6,11 @@ IF NOT DEFINED USER (
 )
 SET SCOPE=default
 SET PPK=nersckey.ppk
-SET URL=sshproxy-dev.nersc.gov
+SET URL=sshproxy.nersc.gov
 SET CURL=%USERPROFILE%\Downloads\curl-7.61.0_4-win32-mingw\curl-7.61.0-win32-mingw\bin\
 PATH %PATH%;%CURL%
 
-curl -s -S -u %USER% -X POST -o %PPK% "https://%URL%/create_pair/%SCOPE%/?format=ppk"
+curl -s -S -u %USER% -X POST -o %PPK% "https://%URL%/create_pair/%SCOPE%/?putty"
 
-pageant %PPK%
-putty -agent %USER%@cori.nersc.gov
+ECHO run pageant %PPK% to load the key
+ECHO then run putty instances like this: putty -agent %USER%@cori.nersc.gov
