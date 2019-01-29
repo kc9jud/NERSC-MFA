@@ -25,7 +25,7 @@
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 progname=$(basename $0)
-verion="1.0.3"
+version="1.0.3"
 
 # Save tty state for trap function below
 original_tty_state=$(stty -g)
@@ -110,7 +110,7 @@ Usage () {
 	if [[ $# -ne 0 ]]; then
 		printf "$progname: %s\n\n", "$*"
 	fi
-	printf "Usage: $progname [-u <user>] [-o <filename>] [-s <scope>] [-p] [-a] [-U <server URL>] | [-v|h]\n"
+	printf "Usage: $progname [-u <user>] [-o <filename>] [-s <scope>] [-p] [-a] [-U <server URL>] [-v] [-h]\n"
 	printf "\n"
 	printf "\t -u <user>\tSpecify remote (NERSC) username\n"
 	printf "\t\t\t(default: $user)\n"
