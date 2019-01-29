@@ -25,6 +25,7 @@
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 progname=$(basename $0)
+verion="1.0.2"
 
 # Save tty state for trap function below
 original_tty_state=$(stty -g)
@@ -138,16 +139,21 @@ opt_url=''	# -U
 opt_user=''	# -u
 opt_out=''	# -o
 opt_agent=0	# -a
+opt_version=0	# -v
 opt_putty=''     # -p
 
 # Process getopts.  See Usage() above for description of arguments
 
-while getopts "aphs:k:U:u:o:" opt; do
+while getopts "aphvs:k:U:u:o:" opt; do
 	case ${opt} in
 
 		h )
 			Usage
 		;;
+ 		v )
+ 			printf "$progname v$version\n"
+ 			exit 0
+ 		;;
 
 		s )
 			opt_scope=$OPTARG
@@ -221,7 +227,7 @@ tmppub="$(mktemp $tmpdir/pub.XXXXXX)"
 
 # And get the key/cert
 curl -s -S -X POST $url/create_pair/$scope/$opt_putty \
-	-o $tmpkey -K - <<< "-u $user:$pw"
+	-o $tmpkey -K - <<< "-u \"${user}:${pw}\""
 
 # Check for error
 if [[ $? -ne 0 ]] ; then
@@ -243,8 +249,9 @@ fi
 # Check whether the file appears to contain a valid key
 
 if [[ "$x" == "PuTTY-User-Key-File-2: ssh-rsa" ]]; then
-   mv $tmpkey $idfile.ppk
-   exit
+	mv $tmpkey $idfile.ppk
+	printf "Successfully obtained PuTTY Key file %s\n" "$idfile.ppk"
+	exit
 fi
 
 if [[ "$x" != "-----BEGIN RSA PRIVATE KEY-----" ]]; then
@@ -291,7 +298,7 @@ if [[ $opt_agent -ne 0 ]]; then
 		;;
 
 		Linux|GNU|CYGWIN*)
-			# Convert the date to epoch
+			# Convert the date to epocsssshhh
 			expepoch=$(date -d $expiry +%s)
 
 			# get current epoch time
