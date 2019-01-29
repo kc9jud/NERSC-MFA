@@ -25,7 +25,7 @@
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 progname=$(basename $0)
-verion="1.0.2"
+verion="1.0.3"
 
 # Save tty state for trap function below
 original_tty_state=$(stty -g)
@@ -110,13 +110,19 @@ Usage () {
 	if [[ $# -ne 0 ]]; then
 		printf "$progname: %s\n\n", "$*"
 	fi
-	printf "Usage: $progname [-u <user>] [-o <filename>] [-s <scope>] [-a] [-U <server URL>]\n"
+	printf "Usage: $progname [-u <user>] [-o <filename>] [-s <scope>] [-p] [-a] [-U <server URL>] | [-v|h]\n"
 	printf "\n"
-	printf "\t -u <user>\tSpecify remote (NERSC) username (default: $user)\n"
-	printf "\t -o <filename>\tSpecify pathname for private key (default: $sshdir/$id)\n"
+	printf "\t -u <user>\tSpecify remote (NERSC) username\n"
+	printf "\t\t\t(default: $user)\n"
+	printf "\t -o <filename>\tSpecify pathname for private key\n"
+	printf "\t\t\t(default: $sshdir/$id)\n"
 	printf "\t -s <scope>\tSpecify scope (default: '$scope')\n"
-	printf "\t -a \tAdd key to ssh-agent (with expiration)\n"
-	printf "\t -U <URL>\tSpecify alternate URL for sshproxy server (generally only used for testing purposes)\n"
+	printf "\t -p\t\tGet keys in PuTTY compatible (ppk) format\n"
+	printf "\t -a\t\tAdd key to ssh-agent (with expiration)\n"
+	printf "\t -U <URL>\tSpecify alternate URL for sshproxy server\n"
+	printf "\t\t\t(generally only used for testing purposes)\n"
+	printf "\t -v \t\tPrint version number and exit\n"
+	printf "\t -h \t\tPrint this usage message and exit\n"
 	printf "\n"
 	
 	exit 0
@@ -139,7 +145,7 @@ opt_url=''	# -U
 opt_user=''	# -u
 opt_out=''	# -o
 opt_agent=0	# -a
-opt_version=0	# -v
+opt_version=''	# -v
 opt_putty=''     # -p
 
 # Process getopts.  See Usage() above for description of arguments
@@ -211,7 +217,7 @@ pubfile="$idfile.pub"
 # prompt is interrupted by ctrl-c.  Otherwise terminal gets left in
 # a weird state.
 
-read -p "Enter the password+OTP for ${user}: " -s pw
+read -r -p "Enter the password+OTP for ${user}: " -s pw
 
 # read -p doesn't output a newline after entry
 printf "\n"
@@ -298,7 +304,7 @@ if [[ $opt_agent -ne 0 ]]; then
 		;;
 
 		Linux|GNU|CYGWIN*)
-			# Convert the date to epocsssshhh
+			# Convert the date to epoch
 			expepoch=$(date -d $expiry +%s)
 
 			# get current epoch time
