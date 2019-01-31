@@ -236,8 +236,9 @@ curl -s -S -X POST $url/create_pair/$scope/$opt_putty \
 	-o $tmpkey -K - <<< "-u \"${user}:${pw}\""
 
 # Check for error
-if [[ $? -ne 0 ]] ; then
-	Bail 1 "Failed." "Curl returned" $?
+err=$?
+if [[ $err -ne 0 ]] ; then
+	Bail 1 "Failed." "Curl returned" $err
 fi
 
 # Get the first line of the file to check for errors from the

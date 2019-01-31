@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ###
 - Add debug mode for, well, debugging
 
+## [1.0.4] - 2019-01-31
+
+### Changed
+- Fixed bug with incorrect error code being passed to Bail when
+- curl returned error
+
 ## [1.0.3] - 2019-01-28
 ### Added
 
