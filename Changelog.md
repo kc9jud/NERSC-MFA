@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 Added support for passing request through socks proxy using "-x" argument
+Added utility to list cert expirations
 
 ## [1.0.4] - 2019-01-31
 
