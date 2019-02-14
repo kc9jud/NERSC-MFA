@@ -25,7 +25,7 @@
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 progname=$(basename $0)
-version="1.0.4"
+version="1.1.0"
 
 # Save tty state for trap function below
 original_tty_state=$(stty -g)
