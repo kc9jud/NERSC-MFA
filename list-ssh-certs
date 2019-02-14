@@ -1,0 +1,27 @@
+#!/bin/bash
+
+if [[ $# -eq 0 ]]
+then
+	files=~/.ssh/*-cert.pub
+else
+	files=$*
+fi
+
+for cert in $files
+do
+	echo -n "$cert: "
+	if [[ ! -e $cert ]]; then
+		echo "file does not exist"
+		continue
+	fi
+	expiry=`ssh-keygen -L -f $cert | grep Valid | sed 's/^.*to //'`
+	epoch=`date -j -f '%FT%T' $expiry +%s`
+	echo -n "$expiry: "
+	now=`date +%s`
+	if (( "$epoch" < "$now" ))
+	then
+		echo "expired"
+	else
+		echo "valid"
+	fi
+done
