@@ -110,7 +110,7 @@ Usage () {
 	if [[ $# -ne 0 ]]; then
 		printf "$progname: %s\n\n", "$*"
 	fi
-	printf "Usage: $progname [-u <user>] [-o <filename>] [-s <scope>] [-p] [-a] [-U <server URL>] [-v] [-h]\n"
+	printf "Usage: $progname [-u <user>] [-o <filename>] [-s <scope>] [-p] [-a] [-x <proxy-url>] [-U <server URL>] [-v] [-h]\n"
 	printf "\n"
 	printf "\t -u <user>\tSpecify remote (NERSC) username\n"
 	printf "\t\t\t(default: $user)\n"
@@ -119,6 +119,9 @@ Usage () {
 	printf "\t -s <scope>\tSpecify scope (default: '$scope')\n"
 	printf "\t -p\t\tGet keys in PuTTY compatible (ppk) format\n"
 	printf "\t -a\t\tAdd key to ssh-agent (with expiration)\n"
+	printf "\t -x <URL>\tUse socks proxy to connect to sshproxy server.\n"
+	printf "\t\t\t(format: <protocol>://<host>[:port], see curl manpage\n"
+	printf "\t\t\tsection on "--proxy" for details)\n"
 	printf "\t -U <URL>\tSpecify alternate URL for sshproxy server\n"
 	printf "\t\t\t(generally only used for testing purposes)\n"
 	printf "\t -v \t\tPrint version number and exit\n"
@@ -147,10 +150,11 @@ opt_out=''	# -o
 opt_agent=0	# -a
 opt_version=''	# -v
 opt_putty=''     # -p
+opt_socks=''     # -x
 
 # Process getopts.  See Usage() above for description of arguments
 
-while getopts "aphvs:k:U:u:o:" opt; do
+while getopts "aphvs:k:U:u:o:x:" opt; do
 	case ${opt} in
 
 		h )
@@ -182,6 +186,10 @@ while getopts "aphvs:k:U:u:o:" opt; do
 		;;
 		p )
 			opt_putty="?putty"
+		;;
+
+		x )
+			opt_socks="--proxy $OPTARG"
 		;;
 
 		\? )
@@ -232,7 +240,7 @@ tmpcert="$(mktemp $tmpdir/cert.XXXXXX)"
 tmppub="$(mktemp $tmpdir/pub.XXXXXX)"
 
 # And get the key/cert
-curl -s -S -X POST $url/create_pair/$scope/$opt_putty \
+curl -s -S -X POST $opt_socks $url/create_pair/$scope/$opt_putty \
 	-o $tmpkey -K - <<< "-u \"${user}:${pw}\""
 
 # Check for error
