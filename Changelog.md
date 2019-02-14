@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ###
 - Add debug mode for, well, debugging
 
+## [1.1.0] - 2019-02-14
+
+### Added
+Added support for passing request through socks proxy using "-x" argument
+
 ## [1.0.4] - 2019-01-31
 
 ### Changed
