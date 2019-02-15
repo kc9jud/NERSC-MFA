@@ -1,0 +1,108 @@
+#!/bin/bash
+# Copyright 2018 Regents of the University of California
+
+#
+# NOTICE.  This software was developed under funding from the U.S.
+# Department of Energy and the U.S. Government consequently retains
+# certain rights. As such, the U.S. Government has been granted for
+# itself and others acting on its behalf a paid-up, nonexclusive,
+# irrevocable, worldwide license in the software to reproduce,
+# distribute copies to the public, prepare derivative works, and
+# perform publicly and display publicly, and to permit other to do
+# so.
+
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL BERKELEY LAB OR THE U.S. GOVERNMENT BE LIABLE FOR
+# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+# GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+# IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+# IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+#
+#  Usage:  $0 [<ssh cert file> ...]
+#
+#  Extracts the expiration date of each certificate file provided
+#  (defaults to ~/.ssh/*-cert.pub), and lists them, with expiration
+#  date and lifetime (in seconds), and indicating whether each cert
+#  is "valid" or "expired."
+
+progname=$(basename $0)
+
+# Set default list of files to certs in ~/.ssh directory if not supplied
+# on command line
+
+if (($# == 0))
+then
+	files=~/.ssh/*-cert.pub
+else
+	files=$*
+fi
+
+dateError=0
+for cert in $files
+do
+	echo -n "$cert: "
+	if [[ ! -e $cert ]]; then
+		echo "file does not exist"
+		continue
+	fi
+	
+	# Extract expiration date
+	expiry=`ssh-keygen -L -f $cert | grep Valid | sed 's/^.*to //'`
+
+	# Display expiration date
+	echo -n "$expiry: "
+
+	# Different distro have different version of the "date" command
+	distro=$(uname)
+
+	case $distro in
+		Darwin|*BSD*)
+			# Convert the date to epoch
+			expepoch=$(date -j -f '%FT%T' $expiry +%s)
+
+			# get current epoch time
+			epoch=$(date +%s)
+		;;
+
+		Linux|GNU|CYGWIN*)
+			# Convert the date to epoch
+			expepoch=$(date -d $expiry +%s)
+
+			# get current epoch time
+			epoch=$(date +%s)
+		;;
+
+		*)
+			echo "unknown"
+			dateError=1
+			continue
+		;;
+	esac
+
+
+	# Compute and display remaining lifetime of cert in seconds
+	lifetime=$(( $expepoch - $epoch))
+	(($lifetime < 0)) && lifetime=0
+
+
+	# And display whether cert is still valid
+	if (( $lifetime > 0 ))
+	then
+		echo "valid: ${lifetime}s"
+	else
+		echo "expired: 0s"
+	fi
+
+done
+
+if (( $dateError != 0 ))
+then
+			echo "Error: unrecognized OS; I don't know how to convert a date to epoch time;"
+			echo "       Can't automatically determine whether certs have expired."
+fi
