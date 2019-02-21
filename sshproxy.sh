@@ -110,7 +110,7 @@ Usage () {
 	if [[ $# -ne 0 ]]; then
 		printf "$progname: %s\n\n", "$*"
 	fi
-	printf "Usage: $progname [-u <user>] [-o <filename>] [-s <scope>] [-c <acoount>] [-p] [-a] [-x <proxy-url>] [-U <server URL>] [-v] [-h]\n"
+	printf "Usage: $progname [-u <user>] [-o <filename>] [-s <scope>] [-c <account>] [-p] [-a] [-x <proxy-url>] [-U <server URL>] [-v] [-h]\n"
 
 	printf "\n"
 	printf "\t -u <user>\tSpecify remote (NERSC) username\n"
