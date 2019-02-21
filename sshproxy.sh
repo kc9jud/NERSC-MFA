@@ -110,7 +110,8 @@ Usage () {
 	if [[ $# -ne 0 ]]; then
 		printf "$progname: %s\n\n", "$*"
 	fi
-	printf "Usage: $progname [-u <user>] [-o <filename>] [-s <scope>] [-p] [-a] [-x <proxy-url>] [-U <server URL>] [-v] [-h]\n"
+	printf "Usage: $progname [-u <user>] [-o <filename>] [-s <scope>] [-c <acoount>] [-p] [-a] [-x <proxy-url>] [-U <server URL>] [-v] [-h]\n"
+
 	printf "\n"
 	printf "\t -u <user>\tSpecify remote (NERSC) username\n"
 	printf "\t\t\t(default: $user)\n"
@@ -119,6 +120,7 @@ Usage () {
 	printf "\t -s <scope>\tSpecify scope (default: '$scope')\n"
 	printf "\t -p\t\tGet keys in PuTTY compatible (ppk) format\n"
 	printf "\t -a\t\tAdd key to ssh-agent (with expiration)\n"
+	printf "\t -c <account>\tSpecify a collaboration account (no default)\n"
 	printf "\t -x <URL>\tUse socks proxy to connect to sshproxy server.\n"
 	printf "\t\t\t(format: <protocol>://<host>[:port], see curl manpage\n"
 	printf "\t\t\tsection on "--proxy" for details)\n"
@@ -154,7 +156,7 @@ opt_socks=''     # -x
 
 # Process getopts.  See Usage() above for description of arguments
 
-while getopts "aphvs:k:U:u:o:x:" opt; do
+while getopts "aphvs:k:U:u:o:x:c:" opt; do
 	case ${opt} in
 
 		h )
@@ -191,6 +193,9 @@ while getopts "aphvs:k:U:u:o:x:" opt; do
 		x )
 			opt_socks="--proxy $OPTARG"
 		;;
+		c )
+			opt_collab=$OPTARG
+		;;
 
 		\? )
 			Usage "Unknown argument"
@@ -206,11 +211,19 @@ done
 # If user has specified a keyfile, then use that.
 # Otherwise, if user has specified a scope, use that for the keyfile name
 # And if it's the default, then use the "id" defined above ("nersc")
+data=''
+if [[ "$opt_collab" != "" ]] ; then
+    if [[ "$opt_scope" == "" ]] ; then
+        scope="collab"
+        opt_scope=$opt_collab
+    fi
+    data='{"target_user": "'$opt_collab'"}'
+fi
 
 if [[ $opt_out != "" ]]; then
 	idfile=$opt_out
 elif [[ "$opt_scope" != "" ]]; then
-	idfile="$sshdir/$scope"
+	idfile="$sshdir/$opt_scope"
 else
 	idfile="$sshdir/$id"
 fi
@@ -241,7 +254,7 @@ tmppub="$(mktemp $tmpdir/pub.XXXXXX)"
 
 # And get the key/cert
 curl -s -S -X POST $opt_socks $url/create_pair/$scope/$opt_putty \
-	-o $tmpkey -K - <<< "-u \"${user}:${pw}\""
+	-d "$data" -o $tmpkey -K - <<< "-u \"${user}:${pw}\""
 
 # Check for error
 err=$?
