@@ -10,7 +10,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/urfave/cli"
-	"golang.org/x/crypto/ssh/terminal"
+	"github.com/howeyc/gopass"
 )
 
 
@@ -58,7 +58,7 @@ func main() {
 
 func promptPassword() (password string, err error) {
 	fmt.Print("Password: ")
-	bytes, err := terminal.ReadPassword(0)
+	bytes, err := gopass.GetPasswdMasked()
 	password = string(bytes)
 	return
 }
