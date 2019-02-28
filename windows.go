@@ -13,6 +13,12 @@ import (
 	"github.com/howeyc/gopass"
 )
 
+func init() {
+	logrus.SetFormatter(&logrus.TextFormatter{
+		DisableTimestamp: true,
+		DisableSorting: true,
+	})
+}
 
 func main() {
 	app := cli.NewApp()
@@ -121,5 +127,8 @@ func grabPpk(ctx *cli.Context) error {
 	w := bufio.NewWriter(f)
 	w.Write(body)
 	w.Flush()
+
+	fmt.Printf(`key was written to %s.  Run "pageant %s" to load the key. Then run putty instances like this: putty -agent %s@cori.nersc.gov`,
+		fname, fname, username)
 	return nil
 }
