@@ -56,8 +56,8 @@ func main() {
 	app.Run(os.Args)
 }
 
-func promptPassword() (password string, err error) {
-	fmt.Print("Password: ")
+func promptPassword(prompt string) (password string, err error) {
+	fmt.Print(prompt)
 	bytes, err := gopass.GetPasswdMasked()
 	password = string(bytes)
 	return
@@ -85,7 +85,8 @@ func grabPpk(ctx *cli.Context) error {
 		logrus.Fatal("no scope specified")
 	}
 
-	password, err := promptPassword()
+	prompt := fmt.Sprintf("Enter the password+OTP for %s: ", username)
+	password, err := promptPassword(prompt)
 	if err != nil {
 		logrus.Fatal(err)
 	}
