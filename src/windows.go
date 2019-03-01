@@ -41,17 +41,21 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "user, u",
-			Usage: "user to authenticate as",
+			Usage: "Specify remote (NERSC) username",
 		},
 		cli.StringFlag{
 			Name:  "output, o",
-			Usage: "key file name",
+			Usage: "Specify pathname for private key",
 			Value: "nersckey.ppk",
 		},
 		cli.StringFlag{
 			Name:  "scope, s",
 			Usage: "key scope",
 			Value: "default",
+		},
+		cli.StringFlag{
+			Name:  "collab, c",
+			Usage: "Specify a collaboration account",
 		},
 		cli.StringFlag{
 			Name:  "server, U",
