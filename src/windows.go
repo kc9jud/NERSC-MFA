@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"bufio"
 	"fmt"
 	"os"
 
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 
@@ -92,7 +94,14 @@ func grabPpk(ctx *cli.Context) error {
 
 	server := ctx.GlobalString("server")
 	if len(server) < 1 {
-		logrus.Fatal("no scope specified")
+		logrus.Fatal("no server specified")
+	}
+
+	payload := []byte{}
+	collab := ctx.GlobalString("collab")
+	if len(collab) > 0 {
+		vals := map[string]string{"target_user": collab}
+		payload, _ = json.Marshal(vals)
 	}
 
 	prompt := fmt.Sprintf("Enter the password+OTP for %s: ", username)
@@ -102,14 +111,14 @@ func grabPpk(ctx *cli.Context) error {
 	}
 
 	url := fmt.Sprintf("https://%s/create_pair/%s/?putty", server, scope)
-	client := &http.Client{}
-	req, err := http.NewRequest("POST", url, nil)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
 	if err != nil {
 		logrus.Fatal(err)
 	}
 	req.SetBasicAuth(username, password)
 
 	logrus.Debugf("contacting %s", url)
+	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		logrus.Fatal(err)
