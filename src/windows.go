@@ -142,7 +142,7 @@ func grabPpk(ctx *cli.Context) error {
 	w.Write(body)
 	w.Flush()
 
-	fmt.Printf(`key was written to %s.  Run "pageant %s" to load the key. Then run putty instances like this: putty -agent %s@cori.nersc.gov`,
+	fmt.Printf(`Key was written to %s.\nRun "pageant %s" to load the key.\nThen run putty instances like this: putty -agent %s@cori.nersc.gov`,
 		fname, fname, username)
 	return nil
 }
