@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ###
 - Add debug mode for, well, debugging
+- Add support for windows Putty output (-p)
+- Add support for collaboration account (-c)
 
 ## [1.1.0] - 2019-02-14
 
