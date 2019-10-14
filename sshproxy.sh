@@ -33,6 +33,7 @@ tmpkey=''
 tmpcert=''
 tmppub=''
 pw=''
+otp=''
 
 # Default values
 id=nersc			# Name of key file
@@ -46,14 +47,14 @@ url="sshproxy.nersc.gov"	# hostname for reaching proxy
 #############
 
 # Error(error string, ...)
-# 
+#
 # prints out error string.  Joins multiple arguments with ": "
 
 
 Error () {
 
 	# Slightly complicated print statement so that output consists of
-	# arguments joined with ": " 
+	# arguments joined with ": "
 
 	printf "$progname: %s" "$1" 1>&2
 	shift
@@ -62,7 +63,7 @@ Error () {
 }
 
 # Bail(exit code, error string, ...)
-# 
+#
 # prints out error string and exits with given exit code
 
 Bail () {
@@ -109,15 +110,16 @@ Usage () {
 	if [[ $# -ne 0 ]]; then
 		printf "$progname: %s\n\n", "$*"
 	fi
-	printf "Usage: $progname [-u <user>] [-o <filename>] [-s <scope>] [-a] [-U <server URL>]\n"
+	printf "Usage: $progname [-u <user>] [-o <filename>] [-s <scope>] [-a] [-U <server URL>] [-Y <QUERY>]\n"
 	printf "\n"
 	printf "\t -u <user>\tSpecify remote (NERSC) username (default: $user)\n"
 	printf "\t -o <filename>\tSpecify pathname for private key (default: $sshdir/$id)\n"
 	printf "\t -s <scope>\tSpecify scope (default: '$scope')\n"
 	printf "\t -a \tAdd key to ssh-agent (with expiration)\n"
 	printf "\t -U <URL>\tSpecify alternate URL for sshproxy server (generally only used for testing purposes)\n"
+	printf "\t -Y <QUERY>\tGet OTP from Yubikey credential QUERY\n"
 	printf "\n"
-	
+
 	exit 0
 }
 
@@ -138,10 +140,11 @@ opt_url=''	# -U
 opt_user=''	# -u
 opt_out=''	# -o
 opt_agent=0	# -a
+opt_yubikey=''	# -Y
 
 # Process getopts.  See Usage() above for description of arguments
 
-while getopts "ahs:k:U:u:o:" opt; do
+while getopts "ahs:k:U:u:o:Y:" opt; do
 	case ${opt} in
 
 		h )
@@ -166,6 +169,9 @@ while getopts "ahs:k:U:u:o:" opt; do
 		;;
 		a )
 			opt_agent=1
+		;;
+		Y )
+			opt_yubikey=$OPTARG
 		;;
 
 		\? )
@@ -194,7 +200,7 @@ fi
 certfile="$idfile-cert.pub"
 pubfile="$idfile.pub"
 
-# Have user enter password+OTP.  Curl can do this, but does not
+# Have user enter password and OTP.  Curl can do this, but does not
 # provide any control over the prompt
 #
 # N.B. INPWPROMPT variable is used in Bail() above for when password
@@ -203,8 +209,14 @@ pubfile="$idfile.pub"
 
 read -p "Enter your password+OTP: " -s pw
 
+if [[ $opt_yubikey != "" ]]; then
+	otp=`ykman oath code --single $opt_yubikey` 
+        if [ ! $? ] ; then exit $?; fi
+else
+	read -p "Enter your OTP: " -s otp
 # read -p doesn't output a newline after entry
 printf "\n"
+fi
 
 # Make temp files.  We want them in the same target directory as the
 # final keys
@@ -217,7 +229,7 @@ tmppub="$(mktemp $tmpdir/pub.XXXXXX)"
 
 # And get the key/cert
 curl -s -S -X POST https://$url/create_pair/$scope/ \
-	-o $tmpkey -K - <<< "-u $user:$pw"
+	-o $tmpkey -K - <<< "-u $user:$pw$otp"
 
 # Check for error
 if [[ $? -ne 0 ]] ; then
