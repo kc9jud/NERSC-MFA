@@ -129,6 +129,7 @@ Usage () {
 	printf "\t\t\t(generally only used for testing purposes)\n"
 	printf "\t -v \t\tPrint version number and exit\n"
 	printf "\t -h \t\tPrint this usage message and exit\n"
+	printf "\t -b \tGet password from BitWarden\n"
 	printf "\t -Y <QUERY>\tGet OTP from Yubikey credential QUERY\n"
 	printf "\n"
 
@@ -155,11 +156,12 @@ opt_agent=0	# -a
 opt_version=''	# -v
 opt_putty=''     # -p
 opt_socks=''     # -x
+opt_bw=0        # -b
 opt_yubikey=''	# -Y
 
 # Process getopts.  See Usage() above for description of arguments
 
-while getopts "aphvs:k:U:u:o:x:c:Y:" opt; do
+while getopts "apbhvs:k:U:u:o:x:c:Y:" opt; do
 	case ${opt} in
 
 		h )
@@ -191,6 +193,9 @@ while getopts "aphvs:k:U:u:o:x:c:Y:" opt; do
 		;;
 		p )
 			opt_putty="?putty"
+		;;
+		b )
+			opt_bw=1
 		;;
 		Y )
 			opt_yubikey=$OPTARG
@@ -244,15 +249,31 @@ pubfile="$idfile.pub"
 # prompt is interrupted by ctrl-c.  Otherwise terminal gets left in
 # a weird state.
 
-read -r -p "Enter the password+OTP for ${user}: " -s pw
+if [[ $opt_bw -ne 0 ]]; then
+	if [ -z "$BW_SESSION" ]
+	then
+		while
+			BW_SESSION=`bw unlock --raw`
+			(($?))
+		do
+			:
+		done
+		export BW_SESSION
+	fi
+	pw=`bw get password nersc.gov`
+else
+	read -r -p "Enter the password for ${user}:: " -s pw
+	# read -p doesn't output a newline after entry
+	printf "\n"
+fi
 
 if [[ $opt_yubikey != "" ]]; then
 	otp=`ykman oath code --single $opt_yubikey` 
         if [ ! $? ] ; then exit $?; fi
 else
 	read -p "Enter your OTP: " -s otp
-# read -p doesn't output a newline after entry
-printf "\n"
+	# read -p doesn't output a newline after entry
+	printf "\n"
 fi
 
 # Make temp files.  We want them in the same target directory as the
